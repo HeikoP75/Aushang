@@ -32,7 +32,6 @@
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh;overflow:hidden;}
-button{touch-action:manipulation;}
 
 /* ══ TOPBAR ══ */
 #toolbar{
@@ -112,7 +111,6 @@ button{touch-action:manipulation;}
 #resizer::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
   width:3px;height:40px;background:var(--acc-mid);border-radius:2px;opacity:0;}
 #resizer:hover::after{opacity:1;}
-html.ist-touch #resizer{display:none!important;}
 
 /* Vorschau-Seite (rechts) */
 #previewPane{
@@ -401,7 +399,7 @@ textarea{resize:vertical;padding:4px 2px;line-height:1.6;}
 .foto2-rahmen:hover{border-color:var(--acc);}
 .foto2-rahmen img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;display:none;cursor:grab;}
 .foto-rahmen:hover{border-color:var(--acc);}
-.foto-rahmen img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;display:none;cursor:grab;touch-action:none;}
+.foto-rahmen img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;display:none;cursor:grab;}
 .foto-ph{font-size:9px;color:#a5b8c9;text-align:center;line-height:1.5;padding:6px;pointer-events:none;}
 .f-fotoname{font-size:10pt;font-weight:700;text-align:center;width:105px;border-bottom:1px dotted #c8d5de;}
 #fotoEingabe{display:none;}
@@ -414,7 +412,7 @@ textarea{resize:vertical;padding:4px 2px;line-height:1.6;}
 .ug-bild-box{width:var(--ug-breite,130px);height:calc(var(--ug-breite,130px)/2.83);min-height:46px;border:1.5px dashed #bbcad4;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;margin-bottom:4px;position:relative;background:#f8f9fb;}
 .ug-bild-box:hover{opacity:.85;}
 .ug-bild-box.leer{display:flex;}
-.ug-bild-box img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:contain;display:none;cursor:grab;touch-action:none;}
+.ug-bild-box img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:contain;display:none;cursor:grab;}
 
 /* Overlay-Modus: Bild über den Namen legen */
 .ug-name-wrap{position:relative;display:inline-block;}
@@ -706,14 +704,6 @@ textarea{resize:vertical;padding:4px 2px;line-height:1.6;}
   align-items:center;justify-content:center;
 }
 #iosPDFHinweis.offen{display:flex;}
-.ios-safari-hinweis{
-  display:none;position:fixed;left:50%;bottom:72px;transform:translateX(-50%);
-  z-index:810;background:#fff;border:1px solid var(--border);border-radius:10px;
-  box-shadow:0 8px 28px rgba(0,0,0,.2);max-width:520px;width:min(92vw,520px);padding:10px 12px;
-}
-.ios-safari-hinweis.offen{display:block;}
-.ios-safari-hinweis p{font-size:12px;color:#78350f;background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:8px 10px;line-height:1.4;}
-.ios-safari-hinweis button{margin-top:8px;}
 .ios-hint-box{background:#fff;border-radius:14px;max-width:340px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);overflow:hidden;}
 .ios-hint-head{background:var(--acc);color:#fff;padding:14px 18px;font-size:14px;font-weight:700;}
 .ios-hint-body{padding:16px 18px;font-size:13px;color:var(--muted);line-height:1.6;}
@@ -832,18 +822,6 @@ textarea{resize:vertical;padding:4px 2px;line-height:1.6;}
   
   /* Foto-Rahmen: größere Touch-Ziele */
   .foto-rahmen{min-height:120px;}
-}
-
-@media (hover: none) and (pointer: coarse) {
-  #toolbar button,
-  .kat-btn,
-  .tbn,
-  .baustein-btn,
-  .size-ctrl-btn,
-  .preview-zoom-btn,
-  .btn-fullscreen,
-  .btn-fs-close,
-  .btn-fs-pdf{min-height:34px;}
 }
 
 @media (max-width: 900px) {
@@ -3528,12 +3506,8 @@ async function exportPDF(){
   var pdfNode = null;
   var pdfNode2 = null;
   try{
-    if(!window.jspdf || !window.jspdf.jsPDF){
-      alert('PDF-Export nicht bereit: jsPDF wurde nicht geladen. Bitte Seite neu laden und erneut versuchen.');
-      return;
-    }
-    if(typeof window.html2canvas!=='function'){
-      alert('PDF-Export nicht bereit: html2canvas wurde nicht geladen. Bitte Seite neu laden und erneut versuchen.');
+    if(typeof window.jspdf==='undefined' || typeof window.html2canvas==='undefined'){
+      alert('PDF-Bibliothek lädt noch, bitte kurz warten.');
       return;
     }
     speichereAktuelleAuswahl();
@@ -3634,9 +3608,6 @@ async function exportPDF(){
     if(_pDatum) _teile.push(_sauber(_pDatum.replace(/[.]/g,'-')));
     var fn=_teile.join('_')+'.pdf';
     pdf.save(fn);
-    if(istIOS() && !zweiSeitenModus){
-      zeigeIOSSafariHinweis('Hinweis: Auf iPad/Safari kann der Export im 1-Seiten-Modus lange Inhalte am Seitenende abschneiden. Aktivieren Sie bei Bedarf den 2-Seiten-Modus vor dem Export.');
-    }
   }catch(err){
     console.error('PDF-Export fehlgeschlagen', err);
     alert('Der PDF-Export ist fehlgeschlagen. Bitte die Datei einmal neu laden und erneut versuchen.');
@@ -3809,7 +3780,6 @@ document.addEventListener('keydown', function(e){
   var isDown = false;
   var startX, startW;
   if(!resizer || !editorPane) return;
-  if(istTouch()){ return; }
   resizer.addEventListener('mousedown', function(e){
     isDown = true;
     startX = e.clientX;
@@ -3817,9 +3787,6 @@ document.addEventListener('keydown', function(e){
     resizer.classList.add('active');
     document.body.style.cursor = 'col-resize';
     document.body.style.userSelect = 'none';
-  });
-  resizer.addEventListener('pointerdown', function(e){
-    if(e.pointerType === 'touch'){ return; }
   });
   document.addEventListener('mousemove', function(e){
     if(!isDown) return;
@@ -5016,15 +4983,6 @@ function iosPDFDrucken(){
   setTimeout(function(){ window.print(); }, 300);
 }
 
-function zeigeIOSSafariHinweis(text){
-  if(!istIOS()) return;
-  var box = document.getElementById('iosSafariGrenzenHinweis');
-  var txt = document.getElementById('iosSafariGrenzenText');
-  if(!box || !txt) return;
-  txt.textContent = text || 'iPad/Safari kann beim PDF-Export in Einzelfaellen technische Grenzen haben.';
-  box.classList.add('offen');
-}
-
 /* ── Touch Pinch-Zoom fuer Fotos ── */
 function touchPinchInit(rahmenEl, getZoom, setZoom, applyFn){
   if(!rahmenEl) return;
@@ -5061,9 +5019,6 @@ function touchPinchInit(rahmenEl, getZoom, setZoom, applyFn){
 
 /* ── Initialisierung Touch-Features ── */
 document.addEventListener('DOMContentLoaded', function(){
-  if(istTouch()){
-    document.documentElement.classList.add('ist-touch');
-  }
 
   // Tab-System initialisieren (nur auf Touch)
   if(istTouch()){
@@ -5156,10 +5111,6 @@ document.addEventListener('DOMContentLoaded', function(){
       <button class="ios-hint-btn" style="background:var(--bg);color:var(--muted);border:1px solid var(--border);" onclick="document.getElementById('iosPDFHinweis').classList.remove('offen')">Abbrechen</button>
     </div>
   </div>
-</div>
-<div id="iosSafariGrenzenHinweis" class="ios-safari-hinweis">
-  <p id="iosSafariGrenzenText"></p>
-  <button class="ios-hint-btn" onclick="document.getElementById('iosSafariGrenzenHinweis').classList.remove('offen')">OK</button>
 </div>
 </body>
 </html>
